@@ -1,31 +1,37 @@
-#include <AFMotor.h>
-
-// define enA = 9
-// define in1 = 6
-// define in2 = 7
+int pwnPin = 9; // speed control pin
+int RPin = 8; // direction pin
+int LPin = 7; // direction pin
 
 void setup() {
-  pinMode(enA, OUTPUT);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(button, INPUT);
+  pinMode(pwnPin, OUTPUT);
+  pinMode(RPin, OUTPUT);
+  pinMode(LPin, OUTPUT);
 
-  Serial.begin(9600);
-}
+  digitalWrite(RPin, LOW);
+  digitalWrite(LPin, LOW);
+  randomSeed(analogRead(0));
 
-AF_DCMotor motor(1); // channel 1
-
-void setup() {
-  motor.setSpeed(100); // 0-255
-  randomSeed(analogRead(0)); 
+  Serial.begin(9600); // Initialize serial communication
 }
 
 void loop() {
-  int randomNumber = random(2); 
-  if (randomNumber == 0) {
-    motor.run(FORWARD);
-  } else {
-    motor.run(BACKWARD);
-  }
-  delay(2000);
+  int randomNum = random(2);
+  Serial.println(randomNum);
+
+  analogWrite(pwnPin, 255);
+ 
+    if (randomNum == 0) {
+      digitalWrite(RPin, HIGH);
+      digitalWrite(LPin, LOW);
+      delay(1000);
+    } else {
+      digitalWrite(RPin, LOW);
+      digitalWrite(LPin, HIGH);
+      delay(1000);
+    }
+    digitalWrite(RPin, LOW);
+    digitalWrite(LPin, LOW);
+    delay(1000);
+  
 }
+
