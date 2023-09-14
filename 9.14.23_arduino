@@ -1,0 +1,96 @@
+// Motor control pins
+int motorPin1 = 9; 
+int motorPin2 = 10; 
+
+unsigned long rewardWindowOpenTime = 0;
+unsigned long rewardWindowCloseTime = 0;
+unsigned long stimulusWindowOpenTime = 0;
+unsigned long stimulusWindowCloseTime = 0;
+
+void setup() {
+  pinMode(motorPin1, OUTPUT);
+  pinMode(motorPin2, OUTPUT);
+
+  // Initialize serial communication
+  Serial.begin(9600);
+  // Seed the random number generator with a random value
+  randomSeed(analogRead(0));
+}
+
+void loop() {
+  // Generate a random direction (1 or 2)
+  int randomDirection = random(1, 3);
+
+  // Control the motor based on the random direction
+  if (randomDirection == 1) {
+    // Run the motor in one direction
+    digitalWrite(motorPin1, HIGH);
+    digitalWrite(motorPin2, LOW);
+  } else if (randomDirection == 2) {
+    // Run the motor in the other direction
+    digitalWrite(motorPin1, LOW);
+    digitalWrite(motorPin2, HIGH);
+  }
+
+  // Record the reward window open time
+  rewardWindowOpenTime = millis();
+
+  // Send a message to Raspberry Pi Pico about the reward window open time
+  Serial.print("REWARD_WINDOW_OPEN,");
+  Serial.println(rewardWindowOpenTime);
+
+  // Run the motor for a random duration (e.g., 2 to 5 seconds)
+  int randomDuration = random(2000, 5000);
+  delay(randomDuration);
+
+  // Record the reward window close time
+  rewardWindowCloseTime = millis();
+
+  // Send a message to Raspberry Pi Pico about the reward window close time
+  Serial.print("REWARD_WINDOW_CLOSE,");
+  Serial.println(rewardWindowCloseTime);
+
+  // Stop the motor
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, LOW);
+
+  // Wait for a while before the next trial (e.g., 2 to 5 seconds)
+  int interTrialInterval = random(2000, 5000);
+  delay(interTrialInterval);
+
+  // Record the stimulus window open time
+  stimulusWindowOpenTime = millis();
+
+  // Send a message to Raspberry Pi Pico about the stimulus window open time
+  Serial.print("STIMULUS_WINDOW_OPEN,");
+  Serial.println(stimulusWindowOpenTime);
+
+  // Run the motor in either direction for 2 seconds as the stimulus
+  if (random(2) == 0) {
+    // Randomly choose the direction
+    digitalWrite(motorPin1, HIGH);
+    digitalWrite(motorPin2, LOW);
+  } else {
+    digitalWrite(motorPin1, LOW);
+    digitalWrite(motorPin2, HIGH);
+  }
+
+  // Run the motor for 2 seconds
+  delay(2000);
+
+  // Stop the motor
+  digitalWrite(motorPin1, LOW);
+  digitalWrite(motorPin2, LOW);
+
+  // Record the stimulus window close time
+  stimulusWindowCloseTime = millis();
+
+  // Send a message to Raspberry Pi Pico about the stimulus window close time
+  Serial.print("STIMULUS_WINDOW_CLOSE,");
+  Serial.println(stimulusWindowCloseTime);
+
+  // Wait for a while before the next trial (e.g., 2 to 5 seconds)
+  interTrialInterval = 5000;
+  delay(interTrialInterval);
+}
+
