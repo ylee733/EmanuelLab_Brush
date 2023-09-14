@@ -1,0 +1,119 @@
+import time
+import ujson as json
+from machine import Pin, UART
+
+trials = int(input("Enter the number of trials: "))
+current_trial = 0
+savefile = 'data.json'
+mouseID = 'mouse001'
+
+
+motor_pin = Pin(25, Pin.OUT)  
+sensor_pin = Pin(14, Pin.IN)  
+valve_pin = Pin(15, Pin.OUT)  
+
+# Configure UART for communication with the Arduino
+uart = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))  # UART0, tx=Pin 0, rx=Pin 1
+
+all_trial_data = {}
+
+for trial in range(trials):
+    current_trial = int(current_trial) + 1
+    trial_time = time.localtime()
+    start_time = time.time()
+
+    try:
+        with open(savefile, 'r') as file:
+            data = json.load(file)
+    except (OSError, ValueError):
+        data = {}
+
+    try:
+        mouse_data = data.get(mouseID, {})
+        keys = list(mouse_data.keys())
+        if keys:
+            last_key = keys[-1]
+            trial_number = mouse_data[last_key].get('trial_number', 0)
+        else:
+            last_key = None
+            trial_number = 0
+    except:
+        last_key = None
+        trial_number = 0
+
+    trial_key = 'trial' + str(current_trial)
+
+    # Send a request to the Arduino to provide reward and stimulus window data
+    uart.write("REQUEST_DATA\n")
+
+while True:
+    if uart.any():
+        received_data = uart.readline()
+        # Split the received message by the comma
+        data_parts = received_data.decode().strip().split(',')
+        if len(data_parts) == 2 and data_parts[0] == "REWARD_WINDOW_OPEN":
+            reward_window_open_time = int(data_parts[1])
+            # Process the received timestamp for reward window open
+            print("Reward Window Open Time:", reward_window_open_time)
+
+    # Wait for response from the Arduino
+    response = uart.readall()
+
+    # Parse the received data (replace with your actual data format)
+    try:
+        data_parts = response.split(',')
+        if len(data_parts) >= 2:
+            reward_window_start_time = float(data_parts[0])
+            stimulus_window_start_time = float(data_parts[1])
+        else:
+            raise ValueError("Invalid data format received from Arduino")
+    except (ValueError, IndexError):
+        print("Error parsing data from Arduino")
+        reward_window_start_time = 0
+        stimulus_window_start_time = 0
+
+# start of trial
+    motor_pin.value(1)  # Start motor
+    time.sleep(2)       # run
+    motor_pin.value(0)  # Stop motor
+
+    # Pause for 5 seconds or until a lick is detected
+    reward_window_end_time = time.time()
+    lick_detected = False
+
+    while time.time() - reward_window_end_time < 5:
+        if sensor_pin.value() == 1:
+            # Lick detected, send signal to open the valve for 3 seconds
+            valve_pin.value(1)  # Open the valve
+            time.sleep(3)       # Valve is open for 3 seconds
+            valve_pin.value(0)  # Close the valve
+            lick_detected = True
+            break  # Exit the loop if lick detected
+
+    # Record timestamps and trial data
+    trial_end_time = time.time()
+
+    trial_data = {
+        'start_time': start_time,
+        'reward_window_start': reward_window_start_time,
+        'reward_window_end': reward_window_end_time,
+        'stimulus_window_start': stimulus_window_start_time,
+        'lick_detected': lick_detected,
+        'valve_opened': lick_detected,  # Valve opened only if lick detected
+        'trial_end_time': trial_end_time
+    }
+
+    all_trial_data[trial_key] = trial_data
+
+    # Serialize and save all_trial_data to a JSON file
+    with open(savefile, 'w') as file:
+        data[mouseID] = all_trial_data
+        json.dump(data, file)
+
+    # End of trial, be sure to release any GPIO pins used
+    motor_pin.value(0)  # Make sure the motor is stopped
+    valve_pin.value(0)  # Make sure the valve is closed
+
+motor_pin.deinit()
+sensor_pin.deinit()
+valve_pin.deinit()
