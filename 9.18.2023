@@ -1,0 +1,55 @@
+import machine
+import utime
+import ujson
+
+# UART Configuration
+uart = machine.UART(0, baudrate=9600, tx=0, rx=1)  # Configure UART pins as needed
+
+# GPIO Pin Configuration
+stimulus_motor_pin = machine.Pin(2, machine.Pin.OUT)
+lick_sensor_pin = machine.Pin(3, machine.Pin.IN, machine.Pin.PULL_UP)
+water_valve_pin = machine.Pin(4, machine.Pin.OUT)
+
+# Trial Parameters
+stimulus_duration = 2  # seconds
+response_window_duration = 5  # seconds (adjust as needed)
+total_trials = 300
+trial_data = []  # List to store trial data
+
+# Lick event handler function
+def handle_lick(pin):
+    trial_info["Lick Registered"] = utime.ticks_ms()
+    water_valve_pin.on()  # Open the water valve
+    utime.sleep(1)  # Allow time for the mouse to drink
+    water_valve_pin.off()  # Close the water valve
+
+# Configure the interrupt on the lick sensor pin
+lick_sensor_pin.irq(trigger=machine.Pin.IRQ_RISING, handler=handle_lick)
+
+# Experiment Loop
+for trial_number in range(1, total_trials + 1):
+    trial_info = {
+        "Trial Number": trial_number,
+        "Trial Start": utime.ticks_ms(),
+    }
+
+    # Start a new trial
+    uart.write("START_STIMULUS\n")  # Send a command to Arduino to start the stimulus
+    stimulus_start_time = utime.ticks_ms()
+    
+    # Monitor the response window
+    response_window_start_time = utime.ticks_ms()
+    while utime.ticks_diff(utime.ticks_ms(), response_window_start_time) < response_window_duration * 1000:
+        pass  # Continue monitoring in the response window
+    
+    # Trial ended
+    trial_info["Trial End"] = utime.ticks_ms()
+    
+    # Log timestamps
+    print(ujson.dumps(trial_info))  # Print trial data as JSON string
+    
+    trial_data.append(trial_info)  # Append trial data to the list
+
+# Save trial data as a JSON library
+with open("trial_data.json", "w") as file:
+    ujson.dump(trial_data, file)
