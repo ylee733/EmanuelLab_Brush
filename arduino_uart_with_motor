@@ -1,0 +1,36 @@
+#define enA 9  // Motor Power Pin
+#define in1 6  // Motor Direction Pin 1
+#define in2 7  // Motor Direction Pin 2
+
+bool ledState = 1;  // Variable used to save the state of LED
+
+void setup() {
+  Serial.begin(9600);  // Set baud rate to 9600
+  pinMode(LED_BUILTIN, OUTPUT);  // Set built-in LED pin as an output
+  pinMode(enA, OUTPUT);  // Set motor power pin as an output
+  pinMode(in1, OUTPUT);  // Set motor direction pin 1 as an output
+  pinMode(in2, OUTPUT);  // Set motor direction pin 2 as an output
+
+  // Set initial motor state
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  analogWrite(enA, 0);
+}
+
+void loop() { 
+  if (Serial.available() > 0 && Serial.read() == 't') {
+    digitalWrite(LED_BUILTIN, ledState);  // Toggle built-in LED
+    ledState = !ledState;  // Toggle LED state variable
+
+    // Turn on the motor for 5 seconds
+    digitalWrite(in1, HIGH);  // Set motor direction
+    digitalWrite(in2, LOW);   // Set motor direction
+    analogWrite(enA, 255);    // Set motor speed (255 for full speed)
+    delay(5000);              // Wait for 5 seconds
+    analogWrite(enA, 0);      // Turn off the motor
+    digitalWrite(in1, LOW);   // Set motor direction
+    digitalWrite(in2, LOW);   // Set motor direction
+
+    Serial.print('m');  // Write 'm' to the Serial output
+  } 
+}
