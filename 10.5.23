@@ -1,0 +1,24 @@
+import utime
+import ujson
+from machine import Pin
+solenoid = Pin(0, Pin.OUT, Pin.PULL_DOWN)
+led = Pin(25, Pin.OUT)
+lick = Pin(1, Pin.IN, Pin.PULL_DOWN)
+timestamps = [] 
+while True:
+    if lick.value():  # If there is a lick
+        current_time = utime.time()  # Get current timestamp
+        timestamps.append(current_time)  
+
+        with open("timestamps.json", "w") as json_file:
+            ujson.dump(timestamps, json_file)
+        # readable
+        formatted_time = utime.localtime(current_time)
+        print("Lick detected at: {}/{}/{} {}:{}:{}".format(formatted_time[2], formatted_time[1], formatted_time[0], formatted_time[3], formatted_time[4], formatted_time[5]))
+        # when lick
+        led.value(1)
+        solenoid.value(1)
+        utime.sleep(0.5)
+        led.value(0)
+        solenoid.value(0)
+        utime.sleep(2)
