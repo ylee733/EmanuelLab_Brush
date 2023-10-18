@@ -1,0 +1,14 @@
+
+bool ledState=1; 
+void setup() {
+  Serial.begin(9600);
+  pinMode(LED_BUILTIN, OUTPUT);
+}
+
+void loop() { 
+  if(Serial.read()== 't') {
+  digitalWrite(LED_BUILTIN, ledState);
+  ledState=!ledState;
+  Serial.print('m'); //write 'm' to the UART
+  } 
+}
