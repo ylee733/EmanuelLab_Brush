@@ -1,0 +1,27 @@
+from machine import Pin,UART
+import time
+
+# initialize UART communication (pins and bandrate)
+#uart = UART(1, baudrate=9600, tx=Pin(4), rx=Pin(5))
+#uart.init(bits=8, parity=None, stop=2)
+# initialize LED
+led = Pin("LED", Pin.OUT)
+pin4 = Pin(8, Pin.OUT)
+
+while True:
+    pin4.value(1)
+    led.value(1)
+    time.sleep(1)
+    pin4.value(0)
+    led.value(0)
+    time.sleep(2)
+
+#     uart.write('t')
+#     print("t sent")
+#     if uart.any():  # if there is any info from arduino
+#         data = uart.read()
+#         # if raspberry recieves 'm' from arduino
+#         if data== b'm':
+#             led.toggle()
+#         # wait 1 second before looping
+#     time.sleep(1) 
