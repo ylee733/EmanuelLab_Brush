@@ -1,0 +1,21 @@
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode(4, INPUT);
+  pinMode(1, INPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+if (digitalRead(4)) {
+  digitalWrite(LED_BUILTIN, 1); 
+}
+  else {
+    digitalWrite(LED_BUILTIN, 0);
+  }
+}
