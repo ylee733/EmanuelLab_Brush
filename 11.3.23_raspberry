@@ -1,0 +1,36 @@
+from machine import Pin,UART
+import utime
+import json
+import urandom 
+import gc
+
+solenoid = Pin(0, Pin.OUT, Pin.PULL_DOWN)
+led = Pin(25, Pin.OUT)
+lick = Pin(1, Pin.IN, Pin.PULL_DOWN)
+timestamps = []
+count = 0
+file_path = '/BAX2wednesday.json'
+
+led = Pin("LED", Pin.OUT)
+to_arduino = Pin(6, Pin.OUT)
+
+solenoid_active = False
+solenoid.value(1)
+utime.sleep(0.05)
+solenoid.value(0)
+valve_T0 = utime.ticks_ms()
+valve_time = utime.ticks_ms() - valve_T0  
+
+try:
+    while True:
+        #light off arduino
+        to_arduino.value(1)
+        led.value(1)
+        utime.sleep(2)
+        
+        #light on arduino
+        to_arduino.value(0)
+        led.value(0)
+        utime.sleep(2)
+except KeyboardInterrupt:
+    pass
