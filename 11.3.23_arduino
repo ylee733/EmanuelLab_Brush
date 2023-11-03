@@ -1,0 +1,48 @@
+#define enA 9 // Power
+#define in1 6 // Direction
+#define in2 7 // Direction
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(2, INPUT_PULLUP);
+  pinMode(13, OUTPUT);
+
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+
+  // Initial motor direction
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+}
+
+void loop() {
+  int sensorVal = digitalRead(2);
+  Serial.println(sensorVal, DEC);
+
+  if (sensorVal == HIGH) {
+    digitalWrite(13, LOW);
+      // Stop motor
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
+    // Turn off motor power 
+    analogWrite(enA, 0);
+    delay(2000);
+
+  } else {
+    digitalWrite(13, HIGH);
+  // Set motor direction (one direction)
+    digitalWrite(in1, HIGH);
+    digitalWrite(in2, LOW);
+    // set speed
+    analogWrite(enA, 50);
+    delay(2000);
+  // Motor runs for 2 seconds
+  //delay(2000);
+  // // Stop motor
+  // digitalWrite(in1, LOW);
+  // digitalWrite(in2, LOW);
+  // // Turn off motor power 
+  // analogWrite(enA, 0);
+  }
+}
