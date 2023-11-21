@@ -1,0 +1,52 @@
+#define enA 9 // Power
+#define in1 6 // Direction
+#define in2 7 // Direction
+const int directionPin = 2; // Connect this to Raspberry Pi Pico pin 2
+const int delayTime = 2000; // Delay time in milliseconds
+unsigned long previousMillis = 0; // Variable to store the last time the motor was updated
+void setup() {
+  Serial.begin(9600);
+  pinMode(2, INPUT);  // Set the direction pin as input with pull-down
+  pinMode(12, INPUT);
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(2,HIGH);
+  digitalWrite(12,HIGH);
+}
+void loop() {
+  int dir1 = digitalRead(2);
+  int dir2 = digitalRead(12);
+
+  if (dir1 ==  LOW) {
+    // Set motor direction based on directionPin
+    updateMotor(HIGH, LOW, 50);  // Rotate clockwise
+    Serial.print(F("dir1HIGH\n"));
+  } else if (dir2 == LOW) {
+    updateMotor(LOW, HIGH, 50);  // Rotate counterclockwise
+    Serial.print(F("dir2HIGH)\n"));
+  } else {
+    analogWrite(enA, 0);
+    Serial.print(F("stop\n"));
+  }
+}
+void updateMotor(int dir1, int dir2, int power) {
+  unsigned long currentMillis = millis();
+  unsigned long previousMillis = millis();  
+  // Check if the specified delay time has passed
+  while (currentMillis - previousMillis <= delayTime) {
+    // Update the motor direction and power
+    Serial.print(currentMillis - previousMillis);
+    Serial.print(F("\n"));
+    digitalWrite(in1, dir1);
+    digitalWrite(in2, dir2);
+    analogWrite(enA, power);
+    // Save the current time for the next comparison
+    currentMillis = millis();
+  }
+    digitalWrite(in1, dir1);
+    digitalWrite(in2, dir2);
+    analogWrite(enA, 0);   
+}
