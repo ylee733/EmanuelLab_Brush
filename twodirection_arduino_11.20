@@ -1,0 +1,40 @@
+#define enA 9 // Power
+#define in1 6 // Direction
+#define in2 7 // Direction
+const int delayTime = 2000; // Delay time in milliseconds
+unsigned long previousMillis = 0; // Variable to store the last time the motor was updated
+void setup() {
+  Serial.begin(9600);
+  pinMode(2, INPUT_PULLUP);
+  pinMode(13, OUTPUT);
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+}
+void loop() {
+  int sensorVal = digitalRead(2); // from raspberry
+  if (sensorVal == HIGH) {
+    updateMotor(LOW, LOW, 0);
+  } else if (sensorVal == LOW) {
+    int randomDirection = random(2);
+    if (randomDirection == 0) {
+      updateMotor(HIGH, LOW, 50);  // Rotate clockwise
+    } else {
+      updateMotor(LOW, HIGH, 50);  // Rotate counterclockwise
+    }
+  }
+}
+void updateMotor(int dir1, int dir2, int power) {
+  unsigned long currentMillis = millis();
+  // Check if the specified delay time has passed
+  if (currentMillis - previousMillis >= delayTime) {
+    // Update the motor direction and power
+    digitalWrite(in1, dir1);
+    digitalWrite(in2, dir2);
+    analogWrite(enA, power);
+    // Save the current time for the next comparison
+    previousMillis = currentMillis;
+  }
+}
